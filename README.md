@@ -7,6 +7,15 @@ the plate leaning towards it. Slide it along and the light goes with it, a soft 
 at every tab it crosses; lift and the lit tab is picked. Everything that moves is a spring — and the
 haptics follow the springs, so the finger feels every bounce the eye sees, each one fainter.
 
+<p align="center">
+  <img src="docs/media/lumen.gif" width="360" alt="A finger slides along the floating navigation bar, the light following it; the plate flies and lands with a bounce; the bar folds as the page scrolls">
+</p>
+<p align="center"><sub>
+  Real time, on an emulator: a press on the selected tab, a slide along the bar and back, quick taps,
+  a slide off the island that picks nothing, and the bar folding as the page scrolls, the FAB riding it ·
+  <a href="docs/media/lumen.mp4">mp4</a>
+</sub></p>
+
 - **`FloatingNavBar`** — a bottom navigation bar that floats as an island and **folds** as the page is
   read (labels away, island narrowed into discs) and opens as it comes back. The selected tab is a
   **jelly plate**: its two edges travel on their own, overshoot and come back, the mark it lands on is
@@ -38,7 +47,7 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("com.github.angelomarzocchi:compose-lumen:0.1.0")
+    implementation("com.github.angelomarzocchi:compose-lumen:0.1.1")
 }
 ```
 
@@ -157,7 +166,8 @@ settles back. `GlossCardDefaults.Violet` is the card these components were born 
 ## Demo
 
 `demo/` puts every component on one scrolling page, with the bar folding as you scroll and a FAB
-riding it. Run it on a phone: the haptics need a vibrator, and the tilt a rotation sensor.
+riding it. `ShowcaseActivity` is the recording above: it plays by itself, dispatching real touch
+events (`adb shell am start -n io.github.angelomarzocchi.lumen.demo/.ShowcaseActivity`). Run it on a phone: the haptics need a vibrator, and the tilt a rotation sensor.
 
 ## Tests
 

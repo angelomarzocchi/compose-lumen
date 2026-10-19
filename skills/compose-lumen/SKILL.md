@@ -6,7 +6,7 @@ description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — 
 # Lumen
 
 Package `io.github.angelomarzocchi.lumen`. Gradle:
-`implementation("com.github.angelomarzocchi:compose-lumen:<version>")` from `https://jitpack.io`.
+`implementation("com.github.angelomarzocchi:compose-lumen:<version>")` (0.1.1 or later) from `https://jitpack.io`.
 minSdk 24. Depends on Material 3 (colours and typography defaults).
 
 Shared model: a component takes **every** touch itself — the finger slides from tab to tab carrying a
@@ -98,6 +98,8 @@ complete `GlassIsland` adapter.
 `val h = rememberBounceHaptics()`; `h.press()` on finger down; drive `h.bounce(strength, landing)` from
 a spring with `ReboundWatch(target) { count, overshoot -> h.bounce(bounceStrength(overshoot, full, floor), count == 1) }`
 fed `watch.frame(value, velocity)` inside `animateTo { }`. Respects the system touch-feedback setting.
+The library declares `android.permission.VIBRATE` (merged into the app); use version 0.1.1 or later —
+0.1.0 crashed with a `SecurityException` on the first touch in apps that did not declare it themselves.
 
 ## Testing
 

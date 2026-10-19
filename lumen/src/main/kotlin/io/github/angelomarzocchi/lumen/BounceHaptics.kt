@@ -87,11 +87,17 @@ public class BounceHaptics internal constructor(private val view: View) {
         val effect = VibrationEffect.startComposition()
             .addPrimitive(primitive, strength.coerceIn(0f, 1f))
             .compose()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(effect, TouchAudioAttributes)
+        // The library declares VIBRATE; an app that strips it from the merged manifest gets the view's
+        // own feedback instead of a crash.
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(effect, TouchAudioAttributes)
+            }
+        } catch (_: SecurityException) {
+            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         }
     }
 
