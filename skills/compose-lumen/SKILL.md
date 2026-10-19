@@ -6,7 +6,7 @@ description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — 
 # Lumen
 
 Package `io.github.angelomarzocchi.lumen`. Gradle:
-`implementation("com.github.angelomarzocchi.compose-lumen:lumen:<version>")` from `https://jitpack.io`.
+`implementation("com.github.angelomarzocchi:compose-lumen:<version>")` from `https://jitpack.io`.
 minSdk 24. Depends on Material 3 (colours and typography defaults).
 
 Shared model: a component takes **every** touch itself — the finger slides from tab to tab carrying a
