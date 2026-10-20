@@ -60,6 +60,8 @@ LightTabs(
 - It never wraps labels; it falls back to labels under icons, then hides them (icons only) — give it the
   width it needs instead of forcing a height.
 - It's meant for inside a page: a vertical drag that starts on it scrolls the page.
+- `LightTabIcons(tabs, selectedId, onSelect)`: the same tabs as icons only (48dp cells, a disc plate),
+  with no island of its own — put it on one coloured `LumenColors.island`. Every tab needs an `icon`.
 
 ## GlossCard
 
@@ -76,6 +78,9 @@ GlossCard(
 
 It casts its own shadows: don't wrap it in `Card`/`Surface` with elevation, and leave room round it
 (~24dp below) so the shadow isn't clipped by the parent.
+
+`BoxScope.GlossCardSurface(shape, colors, slabShift, glossCenter, glossAlpha)` is the body alone, for a
+card with its own motion and gestures: the caller tilts the box and casts the shadows.
 
 ## Colours
 

@@ -47,7 +47,7 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("com.github.angelomarzocchi:compose-lumen:0.1.1")
+    implementation("com.github.angelomarzocchi:compose-lumen:0.2.0")
 }
 ```
 
@@ -138,6 +138,10 @@ LightTabs(
 the row measures them first and gives ground a step at a time — padding, then equal widths, then the
 label under the icon, and last of all the label itself, which then goes to the screen reader.
 
+`LightTabIcons` is the same row as its marks alone, a 48dp square each with the selected one's plate a
+disc: for a pair of views whose labelled tabs have scrolled away. It draws no island of its own, so it
+can sit in a toolbar's; the names go to the screen reader.
+
 ## GlossCard
 
 ```kotlin
@@ -153,6 +157,10 @@ GlossCard(
 
 Inside a list it lets the list scroll: a finger that sets off up or down is the list's, and the card
 settles back. `GlossCardDefaults.Violet` is the card these components were born with.
+
+`GlossCardSurface` is the card's body alone — slab, face, gloss, edge lights — for a card that moves
+in ways of its own (in a stack, opened into a sheet) and tilts itself: put it first in a `Box` and hand
+it where the tilt has the slab and the gloss.
 
 ## Building blocks
 

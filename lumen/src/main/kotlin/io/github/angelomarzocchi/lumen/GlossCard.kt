@@ -211,7 +211,7 @@ internal fun GlossCard(
             },
         propagateMinConstraints = false,
     ) {
-        GlossCardBody(
+        GlossCardSurface(
             shape = shape,
             colors = colors,
             slabShift = { Offset(-tilt.y * 0.45f, tilt.x * 0.45f) },
@@ -227,11 +227,19 @@ internal fun GlossCard(
 /**
  * The card's body, without what is printed on it: the slab that shows its thickness when it tilts,
  * the gradient face with the gloss that follows the finger, the edge light along its top and a darker
- * line along its bottom. The lambdas are read in layer and draw blocks only: [slabShift] in dp,
- * [glossCenter] as a fraction of the size.
+ * line along its bottom. It fills the box it is put in.
+ *
+ * [GlossCard] draws its own. This is for a card that moves in ways of its own — in a stack, opened into
+ * a sheet — and tilts itself: it hands over where the tilt has the slab and the gloss this frame. The
+ * lambdas are read in layer and draw blocks only.
+ *
+ * @param slabShift how far the slab shows past the face, in dp: `Offset(-tiltY, tiltX) * 0.45f` for a
+ *   card tilted by `rotationX = tiltX`, `rotationY = tiltY`, and zero flat.
+ * @param glossCenter the gloss's centre, as a fraction of the size: `Offset(0.3f, 0f)` at rest.
+ * @param glossAlpha how bright the gloss is, 0 to 1: brighter while a finger is on the face.
  */
 @Composable
-private fun BoxScope.GlossCardBody(
+public fun BoxScope.GlossCardSurface(
     shape: Shape,
     colors: GlossCardColors,
     slabShift: () -> Offset,

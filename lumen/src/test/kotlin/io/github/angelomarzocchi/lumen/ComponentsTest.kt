@@ -227,6 +227,53 @@ class ComponentsTest {
         )
     }
 
+    // ---- LightTabIcons ------------------------------------------------------------------------
+
+    private fun showTabIcons() {
+        rule.setContent {
+            MaterialTheme {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LightTabIcons(
+                        tabs = listOf("day", "week", "month").map { id ->
+                            LightTab(id = id, title = id.replaceFirstChar(Char::uppercase)) { _, tint ->
+                                androidx.compose.foundation.Canvas(Modifier.size(20.dp)) { drawRect(tint) }
+                            }
+                        },
+                        selectedId = tabSelected,
+                        onSelect = {
+                            tabPicks += it
+                            tabSelected = it
+                        },
+                        haptics = false,
+                        modifier = Modifier.testTag("icons"),
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun aTapOnATabIconPicksItAndItsNameIsReadOut() {
+        showTabIcons()
+        rule.onNode(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Week")))
+            .performClick()
+        rule.runOnIdle { assertEquals(listOf<Any>("week"), tabPicks) }
+        rule.onNode(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Week")))
+            .assertIsSelected()
+    }
+
+    @Test
+    fun aSlideAcrossTheTabIconsPicksWhereItLifts() {
+        showTabIcons()
+        rule.onNodeWithTag("icons").performTouchInput {
+            // From the middle of the first 48dp cell to the middle of the last.
+            down(Offset(24f, centerY))
+            repeat(10) { moveBy(Offset(9.6f, 0f)) }
+            up()
+        }
+        rule.runOnIdle { assertEquals(listOf<Any>("month"), tabPicks) }
+    }
+
     // ---- GlossCard ----------------------------------------------------------------------------
 
     @Test
