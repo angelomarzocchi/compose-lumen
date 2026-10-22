@@ -59,7 +59,10 @@ LightTabs(
 - `LightTab.description` replaces what TalkBack reads for the tab.
 - It never wraps labels; it falls back to labels under icons, then hides them (icons only) — give it the
   width it needs instead of forcing a height.
-- It's meant for inside a page: a vertical drag that starts on it scrolls the page.
+- It's meant for inside a page: a vertical drag that starts on it scrolls the page. Over something that
+  does not scroll (a viewfinder), pass `inScrollingPage = false`: the press is felt as the finger lands.
+- `material = …` puts it in glass (or any `IslandMaterial`), as for `FloatingNavBar`: the material draws
+  the island and the selected plate; `colors.lit` is the accent it lights the plate with.
 - `LightTabIcons(tabs, selectedId, onSelect)`: the same tabs as icons only (48dp cells, a disc plate),
   with no island of its own — put it on one coloured `LumenColors.island`. Every tab needs an `icon`.
 

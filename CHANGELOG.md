@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- `LightTabs(material = …)`: a row of tabs in glass, or any `IslandMaterial`, as `FloatingNavBar` already
+  could. The material draws the island and the selected tab's plate, as a light inside it.
+- `LightTabs(inScrollingPage = false)`: for a row that sits over something that does not scroll — a
+  viewfinder — the press is felt the moment the finger lands instead of waiting to tell it from a scroll.
+
 ## 0.2.0
 
 - `LightTabIcons`: a row of tabs as their marks alone, the folded bar's discs, for a pair of views whose

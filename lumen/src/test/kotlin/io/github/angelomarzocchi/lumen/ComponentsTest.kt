@@ -15,7 +15,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -25,9 +28,12 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -171,7 +177,7 @@ class ComponentsTest {
     private var tabSelected by mutableStateOf<Any>("day")
     private val tabPicks = mutableListOf<Any>()
 
-    private fun showTabs() {
+    private fun showTabs(material: IslandMaterial? = null, inScrollingPage: Boolean = true) {
         rule.setContent {
             MaterialTheme {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -189,6 +195,8 @@ class ComponentsTest {
                         haptics = false,
                         modifier = Modifier.width(360.dp),
                         fillWidth = true,
+                        material = material,
+                        inScrollingPage = inScrollingPage,
                     )
                 }
             }
@@ -225,6 +233,43 @@ class ComponentsTest {
                 it.config.getOrNull(SemanticsProperties.ContentDescription)?.contains("The whole month") == true
             },
         )
+    }
+
+    /** A material that draws nothing and remembers what it was asked to draw. */
+    private class RecordingMaterial : IslandMaterial {
+        var island = Rect.Zero
+        var selection = Rect.Zero
+        var drawn = 0
+        var engraved = 0
+
+        override fun DrawScope.drawIsland(shape: Rect, radius: Float, overhang: Float, lights: IslandLights) {
+            drawn++
+            island = shape
+            selection = lights.selection
+        }
+
+        override fun contentEffect(density: Density, shape: Rect, radius: Float, lights: IslandLights): RenderEffect? {
+            engraved++
+            return null
+        }
+    }
+
+    @Test
+    fun onAMaterialTheIslandAndTheLitPlateAreTheMaterials() {
+        val material = RecordingMaterial()
+        showTabs(material = material, inScrollingPage = false)
+        rule.onNodeWithText("Week").performClick()
+        // Robolectric draws only when asked to: a capture is a frame drawn.
+        rule.onRoot().captureToImage()
+        rule.runOnIdle {
+            assertEquals(listOf<Any>("week"), tabPicks)
+            assertTrue(material.drawn > 0)
+            assertTrue(material.engraved > 0)
+            // The plate the material lights sits over the tab picked: the middle third of the island.
+            val third = material.island.width / 3f
+            assertTrue(material.selection.width > 0f)
+            assertTrue(material.selection.center.x in third..2 * third)
+        }
     }
 
     // ---- LightTabIcons ------------------------------------------------------------------------

@@ -47,7 +47,7 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("com.github.angelomarzocchi:compose-lumen:0.2.0")
+    implementation("com.github.angelomarzocchi:compose-lumen:0.3.0")
 }
 ```
 
@@ -137,6 +137,10 @@ LightTabs(
 `LightTab.description` is what TalkBack says when the label alone would read badly. Labels never wrap:
 the row measures them first and gives ground a step at a time — padding, then equal widths, then the
 label under the icon, and last of all the label itself, which then goes to the screen reader.
+
+`material` puts the row in glass, or any other `IslandMaterial`, exactly as for `FloatingNavBar` (the
+`GlassIsland` adapter above works for both). `inScrollingPage = false` is for a row over something that
+does not scroll, a viewfinder say: the press is felt as the finger lands.
 
 `LightTabIcons` is the same row as its marks alone, a 48dp square each with the selected one's plate a
 disc: for a pair of views whose labelled tabs have scrolled away. It draws no island of its own, so it

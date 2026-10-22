@@ -39,6 +39,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -165,6 +166,11 @@ private data class TabBarLayout(
  * @param colors the island's, the plate's and the tabs' colours.
  * @param labelStyle the labels' style.
  * @param haptics whether the finger feels presses and landings.
+ * @param material draws the island instead of its flat colour — glass, say: see [IslandMaterial]. It
+ *   draws the selected tab's plate too, as a light inside it, with [LumenColors.lit] as its accent.
+ * @param inScrollingPage whether the row sits in a page that scrolls: a finger that sets off up or down
+ *   is then the page's, and the press waits until the finger is plainly on the tabs. Off — a row over a
+ *   viewfinder, say — the press is felt the moment the finger lands.
  * @param modifier applied to the bar.
  */
 @Composable
@@ -178,6 +184,8 @@ public fun LightTabs(
     colors: LumenColors = LumenDefaults.colors(),
     labelStyle: TextStyle = MaterialTheme.typography.labelLarge,
     haptics: Boolean = true,
+    material: IslandMaterial? = null,
+    inScrollingPage: Boolean = true,
 ) {
     val tabItems = tabs
     if (tabItems.isEmpty()) return
@@ -277,6 +285,34 @@ public fun LightTabs(
         currentOnTabSelected(currentTabItems[index].id)
     }
 
+    /** How far the plate pushes the island out this frame, at its left and its right, on an island [size] big. */
+    fun pushes(size: Size): Pair<Float, Float> {
+        val trackWidth = size.width - 2 * inset
+        val frame = plateFrame(trackWidth, size.height - 2 * inset)
+        val pushStart = max(0f, -frame.left)
+        val pushEnd = max(0f, frame.right - trackWidth)
+        return if (mirrored) pushEnd to pushStart else pushStart to pushEnd
+    }
+
+    val dark = colors.island.luminance() < 0.5f
+    val lights = remember { IslandLights() }
+
+    // The material's lights this frame, in the island's pixels: the lamp is the finger's light, and the
+    // selection is the plate, which a material draws itself.
+    fun lightsOn(size: Size): IslandLights = lights.apply {
+        lamp = Offset(light.x.value, light.y.value)
+        lampOn = light.on.value
+        selection = plateInIsland(size)
+        accent = colors.lit
+        this.dark = dark
+    }
+
+    /** The island's outline this frame, its ends pushed out where the plate presses on them. */
+    fun islandShape(size: Size): Rect {
+        val (left, right) = pushes(size)
+        return Rect(-left, 0f, size.width + right, size.height)
+    }
+
     BoxWithConstraints(modifier = modifier) {
         val layout = tabBarLayout(
             tabItems = tabItems,
@@ -321,17 +357,13 @@ public fun LightTabs(
                 .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
                 .heightIn(min = barHeight)
                 .onSizeChanged { islandSize = it }
+                .then(material?.modifier ?: Modifier)
                 // The island round the plate: its ends pushed out where the plate presses on them, and
                 // the whole of it squashed by a landing. Drawn, not laid out — the page and the touches
                 // keep the island's own size, and nothing relayouts for a bounce.
                 .graphicsLayer {
                     val width = size.width
-                    val trackWidth = width - 2 * inset
-                    val frame = plateFrame(trackWidth, size.height - 2 * inset)
-                    val pushStart = max(0f, -frame.left)
-                    val pushEnd = max(0f, frame.right - trackWidth)
-                    val left = if (mirrored) pushEnd else pushStart
-                    val right = if (mirrored) pushStart else pushEnd
+                    val (left, right) = pushes(size)
                     // Squashed it widens, by no more than the room the ends have left: past either end
                     // the island never reaches further than its ends may give.
                     val crush = if (size.height > 0f) squash.value / size.height else 0f
@@ -347,6 +379,11 @@ public fun LightTabs(
                 }
                 // Under the plate and the marks: the plate sits on the light, and the marks stay sharp.
                 .drawBehind {
+                    if (material != null) {
+                        val shape = islandShape(size)
+                        with(material) { drawIsland(shape, shape.height / 2f, give, lightsOn(size)) }
+                        return@drawBehind
+                    }
                     // Past the island's own bounds by as much as its ends can give: the shape clips it.
                     drawRect(
                         color = colors.island,
@@ -362,20 +399,32 @@ public fun LightTabs(
                         overhang = give,
                     )
                 }
+                // A material may engrave the marks and the labels in itself.
+                .then(
+                    if (material != null) {
+                        Modifier.graphicsLayer {
+                            val shape = islandShape(size)
+                            renderEffect = material.contentEffect(this, shape, shape.height / 2f, lightsOn(size))
+                        }
+                    } else {
+                        Modifier
+                    },
+                )
                 .slideToSelect(
                     light = light,
                     motions = tabMotions,
                     scope = scope,
                     cellAt = ::cellAt,
                     onChosen = ::select,
-                    // A row of tabs sits in a page, and the page may scroll under the finger.
-                    yieldsToScroll = true,
+                    // A row of tabs usually sits in a page, and the page may scroll under the finger.
+                    yieldsToScroll = inScrollingPage,
                     key = mirrored to density,
                 )
                 .selectableGroup()
                 .padding(PlateInset),
         ) {
-            if (pill.placed) {
+            // On a material the plate is the material's to draw: nothing to lay on it.
+            if (pill.placed && material == null) {
                 Box(
                     modifier = Modifier
                         // The track's own size, whatever the pill is doing, so the bar never grows to
