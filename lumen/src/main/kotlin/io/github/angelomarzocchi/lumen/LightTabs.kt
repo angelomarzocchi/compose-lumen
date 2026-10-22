@@ -17,11 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -476,8 +477,9 @@ public fun LightTabs(
                 tabItems.forEachIndexed { index, tab ->
                     val isSelected = index == selectedIndex
                     // One colour for the mark and its label. Lit, a tab off the plate takes the app's
-                    // colour: the light is on it.
-                    val contentColor by animateColorAsState(
+                    // colour: the light is on it. Handed on as a state, read where it is drawn: a fade
+                    // is a redraw of a label a frame, not a recomposition of the row.
+                    val contentColor = animateColorAsState(
                         targetValue = when {
                             isSelected -> colors.onPlate
                             index == light.litIndex -> colors.lit
@@ -533,7 +535,7 @@ private fun Tab(
     isSelected: Boolean,
     motion: TabMotion,
     layout: TabBarLayout,
-    contentColor: Color,
+    contentColor: State<Color>,
     labelStyle: TextStyle,
     onClick: () -> Unit,
     onFocus: (Boolean) -> Unit,
@@ -582,16 +584,16 @@ private fun Tab(
     val mark = @Composable {
         if (icon != null) {
             Box(Modifier.jellyMark(motion)) {
-                icon(isSelected, contentColor)
+                icon(isSelected, contentColor.value)
             }
         }
     }
 
     val label = @Composable {
-        Text(
+        BasicText(
             text = tab.title,
             style = labelStyle,
-            color = contentColor,
+            color = { contentColor.value },
             // The bar has already decided this fits on one line. The ellipsis is only there for
             // the first frame, before the label has reported what it really came out to.
             maxLines = 1,
