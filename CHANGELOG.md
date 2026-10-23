@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `LightTabs`: a tap on the selected tab reaches `onSelect` too, as on `FloatingNavBar` and `LightTabIcons`. An app
+  that shows something else in the selected tab (a zoom the finger has moved away from, say) can take it back.
+
 ## 0.3.0
 
 - `LightTabs(material = …)`: a row of tabs in glass, or any `IslandMaterial`, as `FloatingNavBar` already

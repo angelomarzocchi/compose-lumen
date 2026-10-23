@@ -160,7 +160,8 @@ private data class TabBarLayout(
  *
  * @param tabs the tabs to display.
  * @param selectedId id of the selected tab, matching the `id` of one of [tabs].
- * @param onSelect invoked with the `id` of the tab that was picked.
+ * @param onSelect invoked with the `id` of the tab that was picked, the selected one too (a tap on it can,
+ *   say, take what it shows back to where it starts), as on [FloatingNavBar].
  * @param height the bar's minimum height. It grows past this when the labels stack under the icons.
  * @param fillWidth the tabs share the whole width the bar is given, equally. Off, the bar is as wide
  *   as its tabs and sits where it is put.
@@ -281,8 +282,7 @@ public fun LightTabs(
     }
 
     fun select(index: Int) {
-        if (index == currentSelectedIndex) return
-        pill.felt = true
+        if (index != currentSelectedIndex) pill.felt = true
         currentOnTabSelected(currentTabItems[index].id)
     }
 

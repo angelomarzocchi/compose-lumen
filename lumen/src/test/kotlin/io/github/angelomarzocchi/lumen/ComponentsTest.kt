@@ -212,6 +212,14 @@ class ComponentsTest {
     }
 
     @Test
+    fun aTapOnTheSelectedLightTabIsHeardToo() {
+        showTabs()
+        rule.onNodeWithText("Day").performClick()
+        rule.runOnIdle { assertEquals(listOf<Any>("day"), tabPicks) }
+        rule.onNodeWithText("Day").assertIsSelected()
+    }
+
+    @Test
     fun aSlideAcrossTheTabsPicksWhereItLifts() {
         showTabs()
         val day = rule.onNodeWithText("Day").fetchSemanticsNode().boundsInRoot.center
