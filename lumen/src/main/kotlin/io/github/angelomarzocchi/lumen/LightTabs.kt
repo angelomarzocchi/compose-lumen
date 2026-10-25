@@ -304,6 +304,9 @@ public fun LightTabs(
         lamp = Offset(light.x.value, light.y.value)
         lampOn = light.on.value
         selection = plateInIsland(size)
+        if (tabLit.size != light.lit.size) tabLit = FloatArray(light.lit.size)
+        this.tabs = List(light.lit.size) { restPlate(it, size.width) }
+        for (i in tabLit.indices) tabLit[i] = light.lit[i].value
         accent = colors.lit
         this.dark = dark
     }

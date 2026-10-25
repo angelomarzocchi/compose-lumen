@@ -48,6 +48,16 @@ public class IslandLights internal constructor() {
     public var selection: Rect = Rect.Zero
         internal set
 
+    /**
+     * Each tab's plate at rest, on the island's own pixels, and how lit it is, 0 to 1: the tab under the
+     * finger heads for 1, the one it left fades out. A material that wants the tab to show what is about
+     * to be pressed, as the flat island does, lights these. Empty until the island is measured.
+     */
+    public var tabs: List<Rect> = emptyList()
+        internal set
+    public var tabLit: FloatArray = FloatArray(0)
+        internal set
+
     /** The accent: what the selection is lit with, and what a mark turns under the finger on a light island. */
     public var accent: Color = Color.Unspecified
         internal set
