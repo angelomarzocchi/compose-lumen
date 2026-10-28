@@ -135,7 +135,7 @@ private data class TabBarLayout(
  * **The plate is a soft thing, and moves like one** ([JellyPill]). Its two edges travel on their own:
  * the edge on the side it is heading for goes first, passes its mark a little and comes back, and the
  * other follows ([PlateLeadingEdge]). The mark it lands on is
- * knocked over and pops; the island round it keeps its padding, so a plate landing on an end tab pushes
+ * knocked over and pops (a word alone is only nudged sideways); the island round it keeps its padding, so a plate landing on an end tab pushes
  * that end of the island out, and every landing squashes the island down from the top and lets it
  * spring back up.
  *
@@ -606,8 +606,8 @@ private fun Tab(
             // decided on. It does not depend on the placement, so reporting it cannot set the bar
             // oscillating between two of them.
             onTextLayout = { onLabelWidth(ceil(it.multiParagraph.maxIntrinsicWidth).toInt()) },
-            // A word alone is knocked over and pops as a mark would: the landing has to show on it.
-            modifier = if (icon == null) Modifier.jellyMark(motion) else Modifier,
+            // A word alone is nudged along the row: the landing has to show on it, but only sideways.
+            modifier = if (icon == null) Modifier.jellyWord(motion) else Modifier,
         )
     }
 

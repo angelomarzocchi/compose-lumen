@@ -341,14 +341,19 @@ internal class TabMotion(selected: Boolean) {
     /** Degrees, clockwise. */
     val markTilt = Animatable(0f)
 
+    /** How far a word alone is pushed along the row, in dp: positive to the right. */
+    val wordShift = Animatable(0f)
+
     /**
      * The pill has just landed on this tab: the mark is knocked over, clockwise for a [knock] of 1,
-     * and pops up past its size, and both spring back.
+     * and pops up past its size, and both spring back. A word alone is only nudged the way the pill
+     * came, to the right for a [knock] of 1, and slides back.
      */
     suspend fun land(knock: Float) {
         coroutineScope {
             launch { markScale.animateTo(SelectedIconScale, MarkPop, initialVelocity = MarkPopVelocity) }
             launch { markTilt.animateTo(0f, MarkWobble, initialVelocity = knock * MarkKnockVelocity) }
+            launch { wordShift.animateTo(0f, WordNudge, initialVelocity = knock * WordNudgeVelocity) }
         }
     }
 
@@ -363,6 +368,14 @@ internal fun Modifier.jellyMark(motion: TabMotion): Modifier = graphicsLayer {
     scaleX = motion.markScale.value
     scaleY = motion.markScale.value
     rotationZ = motion.markTilt.value
+}
+
+/**
+ * A word alone as the motion has it: nudged along the row on a landing, and nothing else. Knocked over
+ * and popping as a mark is, a line of text reads as shaken rather than landed on.
+ */
+internal fun Modifier.jellyWord(motion: TabMotion): Modifier = graphicsLayer {
+    translationX = motion.wordShift.value.dp.toPx()
 }
 
 /** A tab's content — mark and label as one — pressed in under the finger. */
@@ -426,6 +439,10 @@ private const val MarkPopVelocity = 6f
 /** The landing's knock: about 12° over at the first swing, then back and forth to upright. */
 private val MarkWobble = spring<Float>(dampingRatio = 0.3f, stiffness = 400f)
 private const val MarkKnockVelocity = 360f
+
+/** The nudge a word alone gets: spring(0.55, 500) from 130 dp/s goes about 3 dp over and barely back. */
+private val WordNudge = spring<Float>(dampingRatio = 0.55f, stiffness = 500f)
+private const val WordNudgeVelocity = 130f
 
 /** The landing is felt in full from an overshoot this size: the pill crossing a whole tab or more. */
 private val FullBounce = 20.dp
