@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
 - `LightActions`: a row of actions in the bar's island, lit by the finger, with no selection: lifting on an
   action does it. Disabled actions are dimmed and do nothing. In glass through `material`, as the bar; the
