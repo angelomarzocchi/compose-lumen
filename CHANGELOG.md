@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `LightActions`: a row of actions in the bar's island, lit by the finger, with no selection: lifting on an
+  action does it. Disabled actions are dimmed and do nothing. In glass through `material`, as the bar; the
+  material's `selection` is empty.
 - `LightTabs`: a tap on the selected tab reaches `onSelect` too, as on `FloatingNavBar` and `LightTabIcons`. An app
   that shows something else in the selected tab (a zoom the finger has moved away from, say) can take it back.
 

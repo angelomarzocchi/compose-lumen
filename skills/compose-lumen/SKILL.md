@@ -1,6 +1,6 @@
 ---
 name: compose-lumen
-description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — touch-lit Jetpack Compose components where a light follows the finger instead of a ripple: FloatingNavBar (a floating bottom bar that folds on scroll, with a jelly plate), LightTabs (a lit segmented row of tabs), GlossCard (a card that tilts towards the finger with a gloss), BounceHaptics and IslandMaterial. Load it before adding a bottom navigation bar, a tab row or a tilting card with these, before wiring a FAB to the bar's fold, before putting the bar in glass, and when tabs pick the wrong item, the bar covers content, or labels disappear.
+description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — touch-lit Jetpack Compose components where a light follows the finger instead of a ripple: FloatingNavBar (a floating bottom bar that folds on scroll, with a jelly plate), LightActions (a row of actions in the same island), LightTabs (a lit segmented row of tabs), GlossCard (a card that tilts towards the finger with a gloss), BounceHaptics and IslandMaterial. Load it before adding a bottom navigation bar, a tab row or a tilting card with these, before wiring a FAB to the bar's fold, before putting the bar in glass, and when tabs pick the wrong item, the bar covers content, or labels disappear.
 ---
 
 # Lumen
@@ -65,6 +65,21 @@ LightTabs(
   the island and the selected plate; `colors.lit` is the accent it lights the plate with.
 - `LightTabIcons(tabs, selectedId, onSelect)`: the same tabs as icons only (48dp cells, a disc plate),
   with no island of its own — put it on one coloured `LumenColors.island`. Every tab needs an `icon`.
+
+## LightActions
+
+```kotlin
+LightActions(
+    actions = listOf(LightAction("Share", sharePainter, onClick = ::share), LightAction("Delete", deletePainter, ::delete, enabled = ok)),
+    modifier = Modifier.width(240.dp).height(60.dp),   // it is as big as this, equal cells
+    material = …,                                      // optional, as for the bar
+)
+```
+
+- Actions, not destinations: no selection, no plate. Lifting on an action calls its `onClick`; a disabled
+  one is dimmed and does nothing.
+- With a `material`, `IslandLights.selection` is `Rect.Zero`: turn the material's selection light off then.
+- No shadow over a material (the material is the island's whole look); the flat island casts the bar's.
 
 ## GlossCard
 

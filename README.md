@@ -146,6 +146,23 @@ does not scroll, a viewfinder say: the press is felt as the finger lands.
 disc: for a pair of views whose labelled tabs have scrolled away. It draws no island of its own, so it
 can sit in a toolbar's; the names go to the screen reader.
 
+## LightActions
+
+```kotlin
+LightActions(
+    actions = listOf(
+        LightAction("Share", rememberVectorPainter(Icons.Default.Share), onClick = ::share),
+        LightAction("Delete", rememberVectorPainter(Icons.Default.Delete), onClick = ::delete, enabled = canDelete),
+    ),
+    modifier = Modifier.width(240.dp).height(60.dp),
+)
+```
+
+The bar's island and its light for a row of things to do rather than places to be: no plate, and lifting
+the finger on an action does it, after it has sunk and before it springs back out. It is as big as its
+modifier, cut into equal cells. `material` puts it in glass as the bar; there `IslandLights.selection` is
+always empty, so a material should leave its selection light off.
+
 ## GlossCard
 
 ```kotlin
