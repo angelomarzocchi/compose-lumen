@@ -81,6 +81,11 @@ public data class LightTab(
      */
     val description: String? = null,
     /**
+     * A second, quieter line under the label, in [LightTabs]' `captionStyle`: "9:16" over "Story". For
+     * a tab that is its words alone; give the bar the height of the two lines.
+     */
+    val caption: String? = null,
+    /**
      * The tab's mark, drawn at 24dp in the colour it is handed. Null for a tab that is its word alone —
      * Story | Post.
      *
@@ -167,6 +172,7 @@ private data class TabBarLayout(
  *   as its tabs and sits where it is put.
  * @param colors the island's, the plate's and the tabs' colours.
  * @param labelStyle the labels' style.
+ * @param captionStyle the style of the [LightTab.caption]s.
  * @param haptics whether the finger feels presses and landings.
  * @param material draws the island instead of its flat colour — glass, say: see [IslandMaterial]. It
  *   draws the selected tab's plate too, as a light inside it, with [LumenColors.lit] as its accent.
@@ -188,6 +194,7 @@ public fun LightTabs(
     haptics: Boolean = true,
     material: IslandMaterial? = null,
     inScrollingPage: Boolean = true,
+    captionStyle: TextStyle = labelStyle,
 ) {
     val tabItems = tabs
     if (tabItems.isEmpty()) return
@@ -321,6 +328,7 @@ public fun LightTabs(
         val layout = tabBarLayout(
             tabItems = tabItems,
             labelStyle = labelStyle,
+            captionStyle = captionStyle,
             laidOutLabelWidths = laidOutLabelWidths,
             availableWidthPx = if (constraints.hasBoundedWidth) constraints.maxWidth else Int.MAX_VALUE,
             fillWidth = fillWidth && constraints.hasBoundedWidth,
@@ -499,6 +507,7 @@ public fun LightTabs(
                         layout = layout,
                         contentColor = contentColor,
                         labelStyle = labelStyle,
+                        captionStyle = captionStyle,
                         onClick = { select(index) },
                         // Reached from the keyboard, a tab is lit as if a finger were on it.
                         onFocus = { focused ->
@@ -540,6 +549,7 @@ private fun Tab(
     layout: TabBarLayout,
     contentColor: State<Color>,
     labelStyle: TextStyle,
+    captionStyle: TextStyle,
     onClick: () -> Unit,
     onFocus: (Boolean) -> Unit,
     onLabelWidth: (Int) -> Unit,
@@ -593,22 +603,36 @@ private fun Tab(
     }
 
     val label = @Composable {
-        BasicText(
-            text = tab.title,
-            style = labelStyle,
-            color = { contentColor.value },
-            // The bar has already decided this fits on one line. The ellipsis is only there for
-            // the first frame, before the label has reported what it really came out to.
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis,
-            // The width the text wanted, whatever it was given: what the next arrangement is
-            // decided on. It does not depend on the placement, so reporting it cannot set the bar
-            // oscillating between two of them.
-            onTextLayout = { onLabelWidth(ceil(it.multiParagraph.maxIntrinsicWidth).toInt()) },
-            // A word alone is nudged along the row: the landing has to show on it, but only sideways.
+        // A word alone is nudged along the row: the landing has to show on it, but only sideways.
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = if (icon == null) Modifier.jellyWord(motion) else Modifier,
-        )
+        ) {
+            BasicText(
+                text = tab.title,
+                style = labelStyle,
+                color = { contentColor.value },
+                // The bar has already decided this fits on one line. The ellipsis is only there for
+                // the first frame, before the label has reported what it really came out to.
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                // The width the text wanted, whatever it was given: what the next arrangement is
+                // decided on. It does not depend on the placement, so reporting it cannot set the bar
+                // oscillating between two of them.
+                onTextLayout = { onLabelWidth(ceil(it.multiParagraph.maxIntrinsicWidth).toInt()) },
+            )
+            tab.caption?.let { caption ->
+                BasicText(
+                    text = caption,
+                    style = captionStyle,
+                    color = { contentColor.value },
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 
     when {
@@ -660,6 +684,7 @@ private fun Tab(
 private fun tabBarLayout(
     tabItems: List<LightTab>,
     labelStyle: TextStyle,
+    captionStyle: TextStyle,
     laidOutLabelWidths: Map<String, Int>,
     availableWidthPx: Int,
     fillWidth: Boolean = false,
@@ -673,12 +698,16 @@ private fun tabBarLayout(
     }
 
     val labelWidths = tabItems.map { tab ->
-        laidOutLabelWidths[tab.title] ?: textMeasurer.measure(
+        val title = laidOutLabelWidths[tab.title] ?: textMeasurer.measure(
             text = tab.title,
             style = labelStyle,
             maxLines = 1,
             softWrap = false,
         ).size.width
+        val caption = tab.caption?.let {
+            textMeasurer.measure(text = it, style = captionStyle, maxLines = 1, softWrap = false).size.width
+        }
+        maxOf(title, caption ?: 0)
     }
     val marked = tabItems.all { it.icon != null }
     val fallback = if (marked) {

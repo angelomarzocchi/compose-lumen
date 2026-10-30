@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `LightTabs`: `LightTab.caption`, a second, quieter line under a word-only tab's label, in the new `captionStyle`.
+
 ## 1.0.0
 
 - `LightActions`: a row of actions in the bar's island, lit by the finger, with no selection: lifting on an

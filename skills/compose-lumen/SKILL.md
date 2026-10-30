@@ -57,6 +57,8 @@ LightTabs(
 - Ids are `Any` and compared with `==`: use stable values.
 - `LightTab.icon` is a slot `(selected, tint) -> Unit`; draw at 24dp with the given tint.
 - `LightTab.description` replaces what TalkBack reads for the tab.
+- `LightTab.caption` is a second, quieter line under the label of a word-only tab ("9:16" over "Story"), in
+  `captionStyle`; give the bar the height of the two lines.
 - It never wraps labels; it falls back to labels under icons, then hides them (icons only) — give it the
   width it needs instead of forcing a height.
 - It's meant for inside a page: a vertical drag that starts on it scrolls the page. Over something that
