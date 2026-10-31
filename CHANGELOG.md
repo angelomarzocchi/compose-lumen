@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- JitPack builds the library again: use this version. 1.1.0 was tagged but never built, so it cannot be installed.
+
 ## 1.1.0
 
 - `LightTabs`: `LightTab.caption`, a second, quieter line under a word-only tab's label, in the new `captionStyle`.

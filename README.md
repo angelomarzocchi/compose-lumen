@@ -47,7 +47,7 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("com.github.angelomarzocchi:compose-lumen:1.1.0")
+    implementation("com.github.angelomarzocchi:compose-lumen:1.1.1")
 }
 ```
 
