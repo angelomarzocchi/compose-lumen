@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - `LightTabs`: `LightTab.caption`, a second, quieter line under a word-only tab's label, in the new `captionStyle`.
 
