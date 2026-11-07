@@ -1,6 +1,6 @@
 ---
 name: compose-lumen
-description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — touch-lit Jetpack Compose components where a light follows the finger instead of a ripple: FloatingNavBar (a floating bottom bar that folds on scroll, with a jelly plate), LightActions (a row of actions in the same island), LightTabs (a lit segmented row of tabs), GlossCard (a card that tilts towards the finger with a gloss), BounceHaptics and IslandMaterial. Load it before adding a bottom navigation bar, a tab row or a tilting card with these, before wiring a FAB to the bar's fold, before putting the bar in glass, and when tabs pick the wrong item, the bar covers content, or labels disappear.
+description: How to use the Lumen library (io.github.angelomarzocchi.lumen) — touch-lit Jetpack Compose components where a light follows the finger instead of a ripple: FloatingNavBar (a floating bottom bar that folds on scroll, with a jelly plate), LightActions (a row of actions in the same island), LightMenu (a soft context menu the finger slides through, with hand-off from a long press), LightTabs (a lit segmented row of tabs), GlossCard (a card that tilts towards the finger with a gloss), BounceHaptics and IslandMaterial. Load it before adding a bottom navigation bar, a tab row, a context menu or a tilting card with these, before wiring a FAB to the bar's fold, before putting the bar in glass, and when tabs pick the wrong item, the bar covers content, or labels disappear.
 ---
 
 # Lumen
@@ -82,6 +82,32 @@ LightActions(
   one is dimmed and does nothing.
 - With a `material`, `IslandLights.selection` is `Rect.Zero`: turn the material's selection light off then.
 - No shadow over a material (the material is the island's whole look); the flat island casts the bar's.
+
+## LightMenu
+
+```kotlin
+val handOff = rememberLightMenuHandOff()
+Card(Modifier.lightMenuHandOff(handOff).combinedClickable(onLongClick = { open = true }, onClick = {}))
+if (open) Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { open = false } }) {   // your scrim
+    LightMenu(
+        entries = listOf(LightMenuHeader("Title", "sub"), LightMenuItem("Share", ::share, icon = p), LightMenuDivider,
+            LightMenuItem("Delete", ::delete, destructive = true)),
+        modifier = Modifier.offset { where }.width(236.dp),
+        handOff = handOff,
+        material = …,                                   // optional; GlassIsland works as is
+    )
+}
+```
+
+- Entries: `LightMenuItem(label, onClick, icon, trailing, checked, destructive, enabled, testTag)`,
+  `LightMenuHeader(title, subtitle)`, `LightMenuDivider`. Items are `Role.Button`; `checked` is `selected`.
+- It does not position itself or close itself: the caller places it, lays the scrim, and closes it in the
+  items' `onClick`s. It consumes touches that land on it, so the scrim under it is not reached.
+- `handOff`: put `Modifier.lightMenuHandOff(handOff)` on every opener (it only watches, in the last pass)
+  and pass the same instance to the menu. A lift before the finger reaches the menu leaves it open.
+- The stretch draws the body up to 14dp past the menu's bounds: don't clip its parent tightly.
+- `colors = LightMenuDefaults.colors(...)`: `content`/`lit` for labels, `accent` for trailing words and
+  checks, `destructive`, `secondary` for the header, `divider`.
 
 ## GlossCard
 

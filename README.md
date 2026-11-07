@@ -163,6 +163,38 @@ the finger on an action does it, after it has sunk and before it springs back ou
 modifier, cut into equal cells. `material` puts it in glass as the bar; there `IslandLights.selection` is
 always empty, so a material should leave its selection light off.
 
+## LightMenu
+
+```kotlin
+val handOff = rememberLightMenuHandOff()
+
+// What opens it: a long press, watched so the same finger can go on into the menu.
+Card(Modifier.lightMenuHandOff(handOff).combinedClickable(onLongClick = { open = true }, onClick = {}))
+
+if (open) LightMenu(
+    entries = listOf(
+        LightMenuHeader("Portra", "you"),
+        LightMenuItem("Favourite", ::favourite, icon = rememberVectorPainter(Icons.Default.Star)),
+        LightMenuItem("Move to", ::move, trailing = "Travel"),
+        LightMenuDivider,
+        LightMenuItem("Delete", ::delete, destructive = true),
+    ),
+    modifier = Modifier.width(236.dp),
+    handOff = handOff,
+)
+```
+
+The vertical sibling of `LightActions`: the finger lights the item under it, slides from one to the next
+with a tick at each, and lifting does the item that is lit; slid off the side, lifting does nothing. The
+menu is soft: each item the finger crosses pulls it a little the way the finger goes, on a spring that
+springs back, and pulled past its top or bottom it stretches after the finger (less and less, 14dp at
+most) and wobbles back when let go, the items carried with it as if hung from the far edge.
+
+With `handOff`, the finger that opened the menu by holding something down chooses without lifting, as
+in iOS's context menus; lifted before it reaches the menu, it leaves the menu open. `material` puts it in
+glass: the `GlassIsland` adapter works unchanged, the items arriving as its `tabs`. The menu places
+nothing itself: position it, and lay a scrim that closes it, where it opens.
+
 ## GlossCard
 
 ```kotlin

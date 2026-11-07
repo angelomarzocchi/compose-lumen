@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+- `LightMenu`: a menu of actions, lit by the finger as `LightActions` is, laid out top to bottom with an
+  optional header, dividers, a trailing word or a check. It is soft: each item the finger crosses pulls
+  it a little that way on a spring, and pulled past an edge it stretches after the finger and wobbles
+  back. In glass through `material`, the items as the material's `tabs`.
+- `LightMenuHandOff` / `Modifier.lightMenuHandOff`: the finger that opened a menu with a long press goes
+  on into it and chooses without lifting.
+
 ## 1.1.1
 
 - JitPack builds the library again: use this version. 1.1.0 was tagged but never built, so it cannot be installed.
