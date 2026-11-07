@@ -51,7 +51,6 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.node.LayoutAwareModifierNode
@@ -205,10 +204,11 @@ public fun Modifier.lightMenuHandOff(handOff: LightMenuHandOff): Modifier = this
  * it; slid up and down the menu the light goes with it, a tick at every item, and lifting does the item
  * that is lit. Slid off the side the light goes out, and lifting then does nothing.
  *
- * The menu is soft. Every item the finger slides onto pulls it a little the way the finger is going, and
- * it springs back; pulled past its top or bottom it stretches after the finger, less and less the further
- * it goes, and springs back with a wobble the finger feels once let go. The items move with it, the
- * nearest to the pulled edge the most, as if hung from the other one.
+ * The menu is soft, and held by the finger: it leans towards where the finger is on it — its top
+ * stretched up with the finger above the middle, its bottom down below it, more the nearer the edge —
+ * and stays so for as long as the finger stays; past its top or bottom it goes on stretching after the
+ * finger, less and less. Only when the finger lifts does it spring back, with a wobble the finger feels.
+ * The items move with it, the nearest to the pulled edge the most, as if hung from the other one.
  *
  * It is as wide as [modifier] makes it, and as tall as its entries. Open it from a long press with
  * [handOff] and the same finger can choose without lifting.
@@ -466,8 +466,6 @@ internal class MenuTouch(count: Int) {
     private var active = false
     private var entered = false
     private var index = -1
-    private var lastY = 0f
-    private val velocity = VelocityTracker()
 
     fun place(entry: Int, coordinates: LayoutCoordinates) {
         entries[entry] = coordinates
@@ -517,11 +515,8 @@ internal class MenuTouch(count: Int) {
     fun start(at: Offset, time: Long) {
         active = true
         entered = isInside(at)
-        velocity.resetTracking()
-        velocity.addPosition(time, at)
-        lastY = at.y
         light.moveTo(at, scope, glide = light.on.value > 0f)
-        hover(at, kick = false)
+        hover(at)
         pull(at)
     }
 
@@ -534,25 +529,21 @@ internal class MenuTouch(count: Int) {
     fun follow(at: Offset, time: Long) {
         // A handed-off finger pulls the menu only once it has been on it: it starts on what opened it.
         if (!entered) entered = isInside(at)
-        velocity.addPosition(time, at)
         light.moveTo(at, scope, glide = true)
-        hover(at, kick = true)
+        hover(at)
         pull(at)
-        lastY = at.y
     }
 
     // Into another item: it lights and sinks, the one before lets go quietly, and the finger feels it.
-    private fun hover(at: Offset, kick: Boolean) {
+    private fun hover(at: Offset) {
         val next = rowAt(at)
         if (next == index) return
         if (index >= 0) squish[index].let { left -> scope.launch { left.cancel() } }
-        val goingDown = at.y > lastY
         index = next
         light.light(next, scope)
         if (next >= 0 && enabled(next)) {
             haptics?.press()
             scope.launch { squish[next].pressIn(LumenMotion.FastSpatial) }
-            if (kick) kick(goingDown)
         }
     }
 
@@ -561,31 +552,19 @@ internal class MenuTouch(count: Int) {
         return at.x >= 0f && at.y >= 0f && at.x <= size.width && at.y <= size.height
     }
 
-    // Past the top or the bottom, the menu follows the finger, less and less.
+    // The menu leans towards where the finger is, and stays leant until it lifts: towards the top above the
+    // middle, towards the bottom below it, and past an edge further still, less and less.
     private fun pull(at: Offset) {
         if (!entered) return
         val size = coordinates?.size ?: return
         val margin = with(density) { LetGoMargin.toPx() }
-        val most = with(density) { MaxStretch.toPx() }
-        val beyond = when {
-            at.x < -margin || at.x > size.width + margin -> 0f
-            at.y < 0f -> at.y
-            at.y > size.height -> at.y - size.height
-            else -> 0f
+        val target = if (at.x < -margin || at.x > size.width + margin) {
+            0f
+        } else {
+            menuStretch(at.y, size.height.toFloat(), with(density) { InsideStretch.toPx() }, with(density) { MaxStretch.toPx() })
         }
-        if (beyond == 0f) {
-            if (abs(stretch.value) > 0f && !stretch.isRunning) scope.launch { stretch.animateTo(0f, StretchBack) }
-            return
-        }
-        val give = most * (1f - exp(-abs(beyond) / (most * StretchStiffness)))
-        scope.launch { stretch.snapTo(if (beyond < 0f) -give else give) }
-    }
-
-    // Each item the finger crosses pulls the menu a little its way: a spring that springs back on its own.
-    private fun kick(goingDown: Boolean) {
-        val speed = abs(velocity.calculateVelocity().y) / density.density
-        val push = (speed * KickShare).coerceIn(KickMin, KickMax) * density.density
-        scope.launch { stretch.animateTo(0f, StretchBack, initialVelocity = stretch.velocity + if (goingDown) push else -push) }
+        if (target == stretch.targetValue && stretch.isRunning) return
+        scope.launch { stretch.animateTo(target, StretchFollow) }
     }
 
     fun end(chosen: Boolean) {
@@ -678,23 +657,38 @@ private const val LightReachRows = 2.5f
 /** How far off the side the finger may wander and still be on the menu, as on the islands. */
 private val LetGoMargin = 48.dp
 
-/** The most the menu stretches past an edge, and how hard it resists: 1/2 of the finger's way at first. */
-private val MaxStretch = 14.dp
+/**
+ * How far the menu leans towards a finger on it: [InsideStretch] with the finger at its top or bottom edge,
+ * none at its middle, in proportion in between; past an edge it goes on after the finger towards
+ * [MaxStretch], less and less, resisting 1/[StretchStiffness] of the way at first.
+ */
+private val InsideStretch = 6.dp
+private val MaxStretch = 16.dp
 private const val StretchStiffness = 2f
+
+/**
+ * The stretch, signed (below 0 the top is pulled up), for a finger at [y] on a menu [height] tall: [inside]
+ * at either edge, growing in proportion from none at the middle, then on from there towards [most] past the
+ * edge, giving 1/[stiffness] of the finger's way at first and less and less.
+ */
+internal fun menuStretch(y: Float, height: Float, inside: Float, most: Float, stiffness: Float = StretchStiffness): Float {
+    if (height <= 0f) return 0f
+    val half = height / 2f
+    val off = y - half
+    if (abs(off) <= half) return inside * off / half
+    val room = max(most - inside, 0f)
+    val beyond = abs(off) - half
+    val give = if (room > 0f) inside + room * (1f - exp(-beyond / (room * stiffness))) else inside
+    return if (off < 0f) -give else give
+}
 
 /** The body narrows by this share of its stretch on each side: it keeps some of its volume. */
 private const val Narrowing = 0.12f
 
-/**
- * The pull of each item crossed, in dp/s given to the stretch: a share of the finger's speed, within
- * bounds. On [StretchBack], 80–200 dp/s peak at about 2.5–6 dp, and spring back once.
- */
-private const val KickShare = 0.12f
-private const val KickMin = 80f
-private const val KickMax = 200f
-private val StretchBack = spring<Float>(dampingRatio = 0.5f, stiffness = 400f)
+/** The stretch after the finger: quick and without bounce, so it reads as the menu held, not thrown. */
+private val StretchFollow = spring<Float>(dampingRatio = 1f, stiffness = 900f)
 
-/** Let go of a stretch: back with a wobble, spring(0.45, 380), felt as the bar's selected tab is poked. */
+/** Let go: back with a wobble, spring(0.45, 380), felt as the bar's selected tab is poked. */
 private val StretchRelease = spring<Float>(dampingRatio = 0.45f, stiffness = 380f)
 private const val ReleaseFullBounce = 0.5f
 private const val ReleaseBounceFloor = 0.06f

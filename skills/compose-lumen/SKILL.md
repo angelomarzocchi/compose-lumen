@@ -105,7 +105,8 @@ if (open) Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { op
   items' `onClick`s. It consumes touches that land on it, so the scrim under it is not reached.
 - `handOff`: put `Modifier.lightMenuHandOff(handOff)` on every opener (it only watches, in the last pass)
   and pass the same instance to the menu. A lift before the finger reaches the menu leaves it open.
-- The stretch draws the body up to 14dp past the menu's bounds: don't clip its parent tightly.
+- It leans towards where the finger is and holds it until the finger lifts; the body then reaches up to
+  16dp past the menu's bounds: don't clip its parent tightly.
 - `colors = LightMenuDefaults.colors(...)`: `content`/`lit` for labels, `accent` for trailing words and
   checks, `destructive`, `secondary` for the header, `divider`.
 

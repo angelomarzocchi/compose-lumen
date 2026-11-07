@@ -186,9 +186,10 @@ if (open) LightMenu(
 
 The vertical sibling of `LightActions`: the finger lights the item under it, slides from one to the next
 with a tick at each, and lifting does the item that is lit; slid off the side, lifting does nothing. The
-menu is soft: each item the finger crosses pulls it a little the way the finger goes, on a spring that
-springs back, and pulled past its top or bottom it stretches after the finger (less and less, 14dp at
-most) and wobbles back when let go, the items carried with it as if hung from the far edge.
+menu is soft and held by the finger: it leans towards where the finger is — its top stretched up with the
+finger above the middle, its bottom down below it, 6dp at the edge — and stays so while the finger stays;
+past an edge it goes on after the finger, less and less, up to 16dp. Only a lift lets it wobble back. The
+items are carried with it as if hung from the far edge.
 
 With `handOff`, the finger that opened the menu by holding something down chooses without lifting, as
 in iOS's context menus; lifted before it reaches the menu, it leaves the menu open. `material` puts it in

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1
+
+- `LightMenu` is held by the finger instead of kicked: it leans towards where the finger is on it (up
+  above the middle, down below it, 6dp at the edge, on to 16dp past it) and stays so until the finger
+  lifts, then wobbles back. The springs that sprang back on their own at each item are gone.
+
 ## 1.2.0
 
 - `LightMenu`: a menu of actions, lit by the finger as `LightActions` is, laid out top to bottom with an
